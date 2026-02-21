@@ -9,6 +9,7 @@ import PhoneCallUI, { TranscriptEntry } from '@/components/PhoneCallUI';
 import ScanlineOverlay from '@/components/ScanlineOverlay';
 import OutcomeScreen from '@/components/OutcomeScreen';
 import type { FeedbackResult } from '@/lib/minimax';
+import { saveToHistory } from '@/lib/history';
 
 const WorldMap = dynamic(() => import('@/components/WorldMap'), { ssr: false });
 
@@ -52,6 +53,20 @@ export default function SimulationPage({ params }: PageProps) {
           `feedback-${id}`,
           JSON.stringify({ feedback, speechAnalysis, rawTranscript, scenarioTitle: title })
         );
+
+        // Persist to localStorage history for readiness report
+        saveToHistory({
+          scenarioId: id,
+          scenarioTitle: title,
+          scenarioType: scenario?.type ?? 'UNKNOWN',
+          city: scenario?.city ?? '',
+          score: feedback.score,
+          outcome: feedback.outcome,
+          good: feedback.good,
+          bad: feedback.bad,
+          fatal_errors: feedback.fatal_errors,
+          date: new Date().toISOString(),
+        });
 
         const feedbackId = `${id}-${Date.now()}`;
         setAppState({

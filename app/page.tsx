@@ -2,15 +2,20 @@
 
 import { useState } from 'react';
 import dynamic from 'next/dynamic';
+import { AnimatePresence } from 'framer-motion';
 import { Scenario } from '@/lib/scenarios';
+import { getHistory } from '@/lib/history';
 import ScenarioPanel from '@/components/ScenarioPanel';
 import ScanlineOverlay from '@/components/ScanlineOverlay';
+import ReadinessReport from '@/components/ReadinessReport';
 
-// Dynamically import WorldMap to avoid SSR issues with Mapbox
 const WorldMap = dynamic(() => import('@/components/WorldMap'), { ssr: false });
 
 export default function HomePage() {
   const [selectedScenario, setSelectedScenario] = useState<Scenario | null>(null);
+  const [showReadiness, setShowReadiness] = useState(false);
+
+  const historyCount = typeof window !== 'undefined' ? getHistory().length : 0;
 
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-[#010b14] relative">
@@ -27,25 +32,35 @@ export default function HomePage() {
             SYMTRA DISPATCH TRAINING SYSTEM v2.5
           </span>
         </div>
-        <div className="flex items-center gap-6 text-[9px] font-mono text-cyan-500/40">
+
+        <div className="flex items-center gap-4 text-[9px] font-mono text-cyan-500/40">
           <span>AI: <span className="text-cyan-300">MINIMAX M.25</span></span>
           <span>VOICE: <span className="text-cyan-300">VAPI</span></span>
           <span>STT: <span className="text-cyan-300">SPEECHMATICS</span></span>
-          <span className="text-cyan-500/30">
-            {new Date().toLocaleTimeString('en-US', { hour12: false })}
-          </span>
+
+          {/* Readiness Report Button */}
+          <button
+            onClick={() => setShowReadiness(true)}
+            className="flex items-center gap-1.5 border border-cyan-500/30 bg-cyan-500/5 hover:bg-cyan-500/15 hover:border-cyan-400/60 transition-all px-2.5 py-0.5 rounded text-cyan-400 tracking-widest"
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
+            READINESS REPORT
+            {historyCount > 0 && (
+              <span className="ml-1 bg-cyan-500/20 border border-cyan-500/30 text-cyan-300 text-[8px] px-1 rounded">
+                {historyCount}
+              </span>
+            )}
+          </button>
         </div>
       </div>
 
       {/* Main layout */}
       <div className="flex w-full h-full pt-8">
-        {/* Left: Scenario Panel */}
         <ScenarioPanel
           selectedId={selectedScenario?.id ?? null}
           onSelect={setSelectedScenario}
         />
 
-        {/* Center: World Map */}
         <div className="flex-1 relative">
           <WorldMap
             selectedScenario={selectedScenario}
@@ -53,7 +68,6 @@ export default function HomePage() {
           />
         </div>
 
-        {/* Right: Info panel when no scenario selected */}
         {!selectedScenario && (
           <div className="w-64 glass-panel border-l border-cyan-500/20 flex flex-col items-center justify-center p-6 text-center">
             <div className="text-4xl mb-4">🌐</div>
@@ -63,21 +77,31 @@ export default function HomePage() {
             </p>
             <div className="mt-6 space-y-2 text-[9px] font-mono text-cyan-500/30 text-left w-full">
               <div className="flex justify-between border-b border-cyan-500/10 pb-1">
-                <span>TRAUMA</span>
-                <span className="text-red-400">2 ACTIVE</span>
+                <span>TRAUMA</span><span className="text-red-400">2 ACTIVE</span>
               </div>
               <div className="flex justify-between border-b border-cyan-500/10 pb-1">
-                <span>MEDICAL</span>
-                <span className="text-orange-400">3 ACTIVE</span>
+                <span>MEDICAL</span><span className="text-orange-400">3 ACTIVE</span>
               </div>
               <div className="flex justify-between border-b border-cyan-500/10 pb-1">
-                <span>FIRE</span>
-                <span className="text-yellow-400">1 ACTIVE</span>
+                <span>FIRE</span><span className="text-yellow-400">1 ACTIVE</span>
               </div>
             </div>
+            <button
+              onClick={() => setShowReadiness(true)}
+              className="mt-6 w-full py-2 border border-cyan-500/30 bg-cyan-500/5 hover:bg-cyan-500/15 text-cyan-400 text-[10px] font-mono tracking-widest rounded transition-all"
+            >
+              ◉ VIEW READINESS REPORT
+            </button>
           </div>
         )}
       </div>
+
+      {/* Readiness Report Modal */}
+      <AnimatePresence>
+        {showReadiness && (
+          <ReadinessReport onClose={() => setShowReadiness(false)} />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
