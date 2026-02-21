@@ -30,6 +30,7 @@ export default function PhoneCallUI({ scenario, onCallEnd }: PhoneCallUIProps) {
   const transcriptRef = useRef<TranscriptEntry[]>([]); // always-current ref, avoids stale closure
   const [waveform, setWaveform] = useState<number[]>(Array(20).fill(2));
   const [isMuted, setIsMuted] = useState(false);
+  const [vapiError, setVapiError] = useState<string | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const waveIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const rawRef = useRef<string>('');
@@ -53,6 +54,7 @@ export default function PhoneCallUI({ scenario, onCallEnd }: PhoneCallUIProps) {
     }
 
     setStatus('connecting');
+    setVapiError(null);
 
     const vapi = new Vapi(publicKey);
     vapiRef.current = vapi;
@@ -89,8 +91,18 @@ export default function PhoneCallUI({ scenario, onCallEnd }: PhoneCallUIProps) {
       onCallEnd(transcriptRef.current, rawRef.current);
     });
 
-    vapi.on('error', (err: Error) => {
-      console.error('VAPI error:', err);
+    vapi.on('error', (err: unknown) => {
+      const msg = err instanceof Error
+        ? err.message
+        : typeof err === 'object' && err !== null
+          ? JSON.stringify(err)
+          : String(err);
+      console.error('VAPI error:', msg);
+      // "ejection" means VAPI's LLM provider failed — likely needs NEXT_PUBLIC_APP_URL set for proxy
+      const display = msg.includes('eject') || msg === '{}'
+        ? 'Call failed: VAPI could not reach the AI. Set NEXT_PUBLIC_APP_URL in .env.local to your public URL (use ngrok for local dev).'
+        : `Call error: ${msg}`;
+      setVapiError(display);
       setStatus('idle');
       if (intervalRef.current) clearInterval(intervalRef.current);
       stopWaveform();
@@ -155,6 +167,11 @@ export default function PhoneCallUI({ scenario, onCallEnd }: PhoneCallUIProps) {
         </div>
         <p className="text-cyan-300 font-mono text-xs font-bold">{scenario.callSign}</p>
         <p className="text-cyan-500/50 font-mono text-[9px]">{scenario.title.toUpperCase()} — {scenario.city.toUpperCase()}</p>
+        {vapiError && (
+          <p className="mt-2 text-[8px] font-mono text-red-400/80 leading-relaxed border border-red-500/20 rounded p-1.5 bg-red-500/5">
+            {vapiError}
+          </p>
+        )}
       </div>
 
       {/* Phone display */}

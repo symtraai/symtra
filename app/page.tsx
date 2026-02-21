@@ -4,18 +4,17 @@ import { useState } from 'react';
 import dynamic from 'next/dynamic';
 import { AnimatePresence } from 'framer-motion';
 import { Scenario } from '@/lib/scenarios';
-import { getHistory } from '@/lib/history';
 import ScenarioPanel from '@/components/ScenarioPanel';
 import ScanlineOverlay from '@/components/ScanlineOverlay';
 import ReadinessReport from '@/components/ReadinessReport';
 
 const WorldMap = dynamic(() => import('@/components/WorldMap'), { ssr: false });
+// Client-only — reads localStorage, must not SSR to avoid hydration mismatch
+const ReadinessBadge = dynamic(() => import('@/components/ReadinessBadge'), { ssr: false });
 
 export default function HomePage() {
   const [selectedScenario, setSelectedScenario] = useState<Scenario | null>(null);
   const [showReadiness, setShowReadiness] = useState(false);
-
-  const historyCount = typeof window !== 'undefined' ? getHistory().length : 0;
 
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-[#010b14] relative">
@@ -45,11 +44,7 @@ export default function HomePage() {
           >
             <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
             READINESS REPORT
-            {historyCount > 0 && (
-              <span className="ml-1 bg-cyan-500/20 border border-cyan-500/30 text-cyan-300 text-[8px] px-1 rounded">
-                {historyCount}
-              </span>
-            )}
+            <ReadinessBadge />
           </button>
         </div>
       </div>
