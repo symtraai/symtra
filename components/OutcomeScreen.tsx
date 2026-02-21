@@ -18,17 +18,16 @@ export default function OutcomeScreen({ outcome, score, feedbackId }: OutcomeScr
 
   useEffect(() => {
     const t = setInterval(() => {
-      setCountdown((c) => {
-        if (c <= 1) {
-          clearInterval(t);
-          router.push(`/feedback/${feedbackId}`);
-          return 0;
-        }
-        return c - 1;
-      });
+      setCountdown((c) => (c <= 1 ? 0 : c - 1));
     }, 1000);
     return () => clearInterval(t);
-  }, [feedbackId, router]);
+  }, []);
+
+  useEffect(() => {
+    if (countdown === 0) {
+      router.push(`/feedback/${feedbackId}`);
+    }
+  }, [countdown, feedbackId, router]);
 
   return (
     <motion.div
