@@ -1,0 +1,107 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #010b14;
+  --cyan: #00d4ff;
+  --red: #ff0040;
+  --green: #00ff88;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--cyan);
+  font-family: 'Courier New', 'Lucida Console', monospace;
+  overflow: hidden;
+}
+
+/* Scanlines effect */
+.scanlines {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.08) 2px,
+    rgba(0, 0, 0, 0.08) 4px
+  );
+}
+
+/* Vignette */
+.vignette {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9998;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 50%,
+    rgba(0, 0, 0, 0.5) 100%
+  );
+}
+
+/* Glass panel */
+.glass-panel {
+  background: rgba(0, 20, 40, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* Terminal cursor blink */
+.terminal-cursor {
+  display: inline-block;
+  animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* Glow text */
+.glow-cyan {
+  text-shadow: 0 0 10px rgba(0, 212, 255, 0.8), 0 0 20px rgba(0, 212, 255, 0.4);
+}
+
+.glow-red {
+  text-shadow: 0 0 10px rgba(255, 0, 64, 0.8), 0 0 20px rgba(255, 0, 64, 0.4);
+}
+
+.glow-green {
+  text-shadow: 0 0 10px rgba(0, 255, 136, 0.8), 0 0 20px rgba(0, 255, 136, 0.4);
+}
+
+/* Hide scrollbar */
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+/* Mapbox overrides */
+.mapboxgl-ctrl-bottom-right {
+  opacity: 0.3;
+  filter: grayscale(1);
+}
+
+/* Border glow animation */
+@keyframes borderPulse {
+  0%, 100% { border-color: rgba(0, 212, 255, 0.2); }
+  50% { border-color: rgba(0, 212, 255, 0.6); }
+}
+
+.border-pulse {
+  animation: borderPulse 2s ease-in-out infinite;
+}
