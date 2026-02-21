@@ -27,6 +27,7 @@ export default function PhoneCallUI({ scenario, onCallEnd }: PhoneCallUIProps) {
   const [status, setStatus] = useState<CallStatus>('idle');
   const [duration, setDuration] = useState(0);
   const [transcript, setTranscript] = useState<TranscriptEntry[]>([]);
+  const transcriptRef = useRef<TranscriptEntry[]>([]); // always-current ref, avoids stale closure
   const [waveform, setWaveform] = useState<number[]>(Array(20).fill(2));
   const [isMuted, setIsMuted] = useState(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -73,7 +74,9 @@ export default function PhoneCallUI({ scenario, onCallEnd }: PhoneCallUIProps) {
           text: msg.transcript || '',
           timestamp: now(),
         };
-        setTranscript((prev) => [...prev, entry]);
+        // Update both ref (for call-end closure) and state (for UI)
+        transcriptRef.current = [...transcriptRef.current, entry];
+        setTranscript(transcriptRef.current);
         rawRef.current += `[${entry.timestamp}] ${role.toUpperCase()}: ${entry.text}\n`;
       }
     });
@@ -82,7 +85,8 @@ export default function PhoneCallUI({ scenario, onCallEnd }: PhoneCallUIProps) {
       setStatus('ended');
       if (intervalRef.current) clearInterval(intervalRef.current);
       stopWaveform();
-      onCallEnd(transcript, rawRef.current);
+      // Use ref — never stale, unlike state in closure
+      onCallEnd(transcriptRef.current, rawRef.current);
     });
 
     vapi.on('error', (err: Error) => {
@@ -105,7 +109,7 @@ export default function PhoneCallUI({ scenario, onCallEnd }: PhoneCallUIProps) {
       console.error('Failed to start call:', err);
       setStatus('idle');
     }
-  }, [scenario.id, transcript, onCallEnd, startWaveform, stopWaveform]);
+  }, [scenario.id, onCallEnd, startWaveform, stopWaveform]);
 
   const endCall = useCallback(() => {
     vapiRef.current?.stop();

@@ -85,6 +85,27 @@ export default function SimulationPage({ params }: PageProps) {
     [id, scenario]
   );
 
+  // Dev helper: trigger debrief with a mock transcript (no real VAPI call needed)
+  const triggerTestDebrief = useCallback(async () => {
+    const mockRaw = [
+      '[12:00:01] PATIENT: Help! I\'ve been shot, I\'m in Central Park near the fountain!',
+      '[12:00:05] OPERATOR: Okay stay calm. Where are you exactly?',
+      '[12:00:08] PATIENT: Central Park, by the big fountain, please hurry I\'m bleeding bad',
+      '[12:00:12] OPERATOR: I\'m sending help right now. Can you apply pressure to the wound?',
+      '[12:00:17] PATIENT: Yes... okay I\'m pressing on it',
+      '[12:00:20] OPERATOR: Keep pressing hard. Don\'t remove your hand. Help is on the way, stay with me.',
+    ].join('\n');
+    const mockEntries: TranscriptEntry[] = [
+      { role: 'patient', text: "Help! I've been shot, I'm in Central Park near the fountain!", timestamp: '12:00:01' },
+      { role: 'operator', text: 'Okay stay calm. Where are you exactly?', timestamp: '12:00:05' },
+      { role: 'patient', text: "Central Park, by the big fountain, please hurry I'm bleeding bad", timestamp: '12:00:08' },
+      { role: 'operator', text: "I'm sending help right now. Can you apply pressure to the wound?", timestamp: '12:00:12' },
+      { role: 'patient', text: "Yes... okay I'm pressing on it", timestamp: '12:00:17' },
+      { role: 'operator', text: "Keep pressing hard. Don't remove your hand. Help is on the way.", timestamp: '12:00:20' },
+    ];
+    await handleCallEnd(mockEntries, mockRaw);
+  }, [handleCallEnd]);
+
   if (!scenario) {
     return (
       <div className="flex h-screen items-center justify-center bg-[#010b14] font-mono text-red-400">
@@ -110,9 +131,19 @@ export default function SimulationPage({ params }: PageProps) {
           <span className="text-[9px] font-mono text-cyan-500/30">|</span>
           <span className="text-[9px] font-mono tracking-widest text-red-400 animate-pulse">● SIMULATION ACTIVE</span>
         </div>
-        <span className="text-[9px] font-mono text-cyan-500/50">
-          {scenario.code} — {scenario.title.toUpperCase()} — {scenario.city.toUpperCase()}
-        </span>
+        <div className="flex items-center gap-4">
+          <span className="text-[9px] font-mono text-cyan-500/50">
+            {scenario.code} — {scenario.title.toUpperCase()} — {scenario.city.toUpperCase()}
+          </span>
+          {appState.phase === 'call' && (
+            <button
+              onClick={triggerTestDebrief}
+              className="text-[8px] font-mono border border-yellow-500/30 text-yellow-500/60 px-2 py-0.5 rounded hover:border-yellow-500/60 hover:text-yellow-400 transition-colors"
+            >
+              [TEST DEBRIEF]
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Main layout */}
