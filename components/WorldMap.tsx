@@ -12,8 +12,31 @@ interface WorldMapProps {
   onScenarioSelect: (scenario: Scenario) => void;
 }
 
-// Free dark style — Stadia Maps Alidade Smooth Dark (no token needed on localhost)
-const MAP_STYLE = 'https://tiles.stadiamaps.com/styles/alidade_smooth_dark.json';
+// CARTO Dark Matter — completely free, no API key, works everywhere
+const MAP_STYLE = {
+  version: 8 as const,
+  sources: {
+    'carto-dark': {
+      type: 'raster' as const,
+      tiles: [
+        'https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png',
+        'https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png',
+        'https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png',
+      ],
+      tileSize: 256,
+      attribution: '© <a href="https://carto.com">CARTO</a> © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    },
+  },
+  layers: [
+    {
+      id: 'carto-dark-layer',
+      type: 'raster' as const,
+      source: 'carto-dark',
+      minzoom: 0,
+      maxzoom: 22,
+    },
+  ],
+};
 
 const INITIAL_VIEW = {
   longitude: 0,

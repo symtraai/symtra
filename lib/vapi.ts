@@ -14,8 +14,6 @@ export function buildVapiAssistantConfig(scenario: Scenario) {
     model: {
       provider: 'custom-llm',
       url: `${APP_URL}/api/vapi/llm`,
-      // Dummy key — auth handled server-side in our proxy
-      customLlmExtraParams: {},
       model: 'abab6.5s-chat',
       messages: [
         {
