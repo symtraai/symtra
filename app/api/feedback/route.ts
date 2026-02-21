@@ -16,9 +16,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Scenario not found' }, { status: 404 });
     }
 
-    // Run both analyses in parallel
     const [feedback, speechAnalysis] = await Promise.all([
-      generateFeedback(transcript, scenario.title),
+      generateFeedback(transcript, scenario.title, scenarioId),
       Promise.resolve(analyzeSpeechMetrics(transcript)),
     ]);
 
